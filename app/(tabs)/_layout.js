@@ -1,5 +1,6 @@
 import { Tabs, Redirect } from 'expo-router';
 import { Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from '../../lib/store';
 
 const tabIcon = (emoji) => ({ focused }) => (
@@ -8,6 +9,7 @@ const tabIcon = (emoji) => ({ focused }) => (
 
 export default function TabsLayout() {
   const profileComplete = useStore((s) => s.profileComplete);
+  const insets = useSafeAreaInsets();
   // Bounce to onboarding the first time the app loads without a profile.
   if (!profileComplete) return <Redirect href="/onboarding" />;
   return (
@@ -17,10 +19,18 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: '#11161f',
           borderTopColor: '#1f2937',
-          height: 76,
-          paddingBottom: 16,
+          // Sized from the device's safe area rather than a fixed 76/16, so the
+          // labels clear the iPhone home indicator instead of sitting under it.
+          // 54px of icon + label, plus the 6/6 padding below and above it.
+          height: 66 + insets.bottom,
+          paddingBottom: insets.bottom + 6,
           paddingTop: 6,
+          // Portrait phones report no left/right inset, but rounded display
+          // corners still clip the first and last tab, so keep a gutter.
+          paddingLeft: Math.max(insets.left, 8),
+          paddingRight: Math.max(insets.right, 8),
         },
+        tabBarItemStyle: { paddingHorizontal: 0 },
         tabBarActiveTintColor: '#7cf0a1',
         tabBarInactiveTintColor: '#6b7280',
         tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },

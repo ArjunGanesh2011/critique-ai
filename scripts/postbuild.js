@@ -27,8 +27,18 @@ const head = `
 let html = fs.readFileSync(indexPath, 'utf8');
 if (!html.includes('rel="manifest"')) {
   html = html.replace('</head>', head + '  </head>');
-  fs.writeFileSync(indexPath, html);
 }
+
+// viewport-fit=cover exposes the real safe-area insets to the app, which the
+// tab bar uses to keep clear of the home indicator and rounded corners.
+if (!html.includes('viewport-fit=cover')) {
+  html = html.replace(
+    /(<meta name="viewport" content="[^"]*)"/,
+    '$1, viewport-fit=cover"'
+  );
+}
+
+fs.writeFileSync(indexPath, html);
 
 // Single-page export: any unknown path must fall back to the app shell.
 fs.writeFileSync(path.join(dist, '404.html'), html);
