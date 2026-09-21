@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "Critique Fit",
+    "slug": "critique-fit",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "critiquefit",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0b0f17"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.arjun.critiquefit",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Take photos of your meals to estimate macros."
+      }
+    },
+    "android": {
+      "package": "com.arjun.critiquefit",
+      "permissions": [
+        "CAMERA"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "name": "Critique AI",
+      "shortName": "Critique",
+      "themeColor": "#0b0f17",
+      "backgroundColor": "#0b0f17",
+      "display": "standalone",
+      "orientation": "portrait",
+      "description": "AI fitness, macro tracking and diet planning."
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Critique Fit to use your camera to log meals."
+        }
+      ],
+      "expo-notifications"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      }
+    },
+    "experiments": {
+      "baseUrl": "/critique-ai"
+    }
+  }
+}
