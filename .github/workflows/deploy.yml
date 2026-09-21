@@ -1,21 +1,24 @@
 name: Deploy to GitHub Pages
 
+# Publishes the built site to the gh-pages branch, which Pages serves with
+# Settings > Pages > Source = "Deploy from a branch", branch gh-pages, / (root).
+# This avoids the "GitHub Actions" Pages source, whose API the default workflow
+# token is not permitted to enable.
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,18 +28,17 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build:web
-      # Requires Settings > Pages > Source = GitHub Actions (one-time).
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish dist to gh-pages
+        working-directory: dist
+        run: |
+          touch .nojekyll
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Publish ${GITHUB_SHA:0:7}"
+          # gh-pages holds build output only, so replacing it wholesale is safe.
+          git push -q --force \
+            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" \
+            gh-pages

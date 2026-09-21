@@ -1,15 +1,15 @@
-# Critique Fit
+﻿# Critique Fit
 
 A Critique-AI style fitness gamification app. Track macros, snap photos of food for AI macro estimates, complete hourly quests, and level up a character from "Skinny-Fat Scrub" to "Mythic Athlete."
 
-Built with React Native + Expo Router. Runs on your iPhone via Expo Go — no App Store, no Apple Developer account needed.
+Built with React Native + Expo Router. Runs on your iPhone via Expo Go â€” no App Store, no Apple Developer account needed.
 
 ## What's in the app
 
-- **Character tab** — Tier/level system, XP bar, daily streak, today's macro overview at a glance.
-- **Macros tab** — Search Open Food Facts (~3M products), scale by grams, log entries, +5 XP per log.
-- **Snap tab** — Take a photo of a meal, Claude Vision estimates the foods + macros, log with one tap.
-- **Quests tab** — 10 daily quests (pushups, water, walk, gym, etc.), level-up alerts, optional hourly notifications.
+- **Character tab** â€” Tier/level system, XP bar, daily streak, today's macro overview at a glance.
+- **Macros tab** â€” Search Open Food Facts (~3M products), scale by grams, log entries, +5 XP per log.
+- **Snap tab** â€” Take a photo of a meal, Claude Vision estimates the foods + macros, log with one tap.
+- **Quests tab** â€” 10 daily quests (pushups, water, walk, gym, etc.), level-up alerts, optional hourly notifications.
 
 State persists locally on the phone via AsyncStorage.
 
@@ -42,11 +42,11 @@ Camera-to-macros will not work without this. Everything else (manual logging, qu
 ```
 npx expo start
 ```
-A QR code appears in the terminal. Open the iPhone camera app, point it at the QR, tap the banner, and Expo Go loads the app. Hot reload works — edit a file, save, the app updates instantly.
+A QR code appears in the terminal. Open the iPhone camera app, point it at the QR, tap the banner, and Expo Go loads the app. Hot reload works â€” edit a file, save, the app updates instantly.
 
 ## Daily-use tips
 
-- **Quest XP scaling:** Pushups give 25 XP. Hitting the gym gives 150 XP. Sleeping 8 hours gives 50 XP. Hit Level 7 (Mythic Athlete) by stacking ~5500 XP — roughly 2-3 months of consistent grind.
+- **Quest XP scaling:** Pushups give 25 XP. Hitting the gym gives 150 XP. Sleeping 8 hours gives 50 XP. Hit Level 7 (Mythic Athlete) by stacking ~5500 XP â€” roughly 2-3 months of consistent grind.
 - **Camera-to-macros cost:** Each photo costs ~$0.01-0.02 in Anthropic API usage. Log 3 meals/day = ~$1/month.
 - **Notifications:** The hourly toggle in the Quests tab schedules a single repeating push every hour while the app is registered. Toggle off when you don't want pestering.
 
@@ -65,7 +65,7 @@ app/
 lib/
   store.js              Zustand + AsyncStorage state
   openFoodFacts.js      Food search API
-  claudeVision.js       Photo → macros
+  claudeVision.js       Photo â†’ macros
   quests.js             Quest catalog
 
 components/
@@ -76,13 +76,13 @@ components/
 ## Tweaking it
 
 - **Adjust macro goals:** edit `initialMacroGoals` in `lib/store.js`.
-- **Add quests:** append to the array in `lib/quests.js` — id, title, icon, xp, cooldown.
-- **Change tiers:** edit `TIERS` array in `lib/store.js` — add levels, rename titles, change emojis.
-- **Switch to USDA / Nutritionix later:** swap the implementation in `lib/openFoodFacts.js` — the interface (`searchFoods`, `scaleMacros`) stays the same.
+- **Add quests:** append to the array in `lib/quests.js` â€” id, title, icon, xp, cooldown.
+- **Change tiers:** edit `TIERS` array in `lib/store.js` â€” add levels, rename titles, change emojis.
+- **Switch to USDA / Nutritionix later:** swap the implementation in `lib/openFoodFacts.js` â€” the interface (`searchFoods`, `scaleMacros`) stays the same.
 
 ## Known limits of the MVP
 
-- No barcode scanner yet (easy add — Open Food Facts has barcode lookup).
+- No barcode scanner yet (easy add â€” Open Food Facts has barcode lookup).
 - No recipe builder.
 - No multi-day history (only today is shown; data accumulates in entries log).
 - Web target (`npx expo start --web`) works for most screens but camera + notifications need the phone.
@@ -99,7 +99,7 @@ You'll need an Apple Developer account ($99/yr) at that point. Until then, Expo 
 ## Web app on your phone (GitHub Pages)
 
 The same app also builds to a static website, which installs to an iPhone or
-Android home screen like a normal app — no App Store, no Expo Go.
+Android home screen like a normal app â€” no App Store, no Expo Go.
 
 **Live site:** https://ArjunGanesh2011.github.io/critique-ai/
 
@@ -121,8 +121,9 @@ Food Facts search needs no key and is unlimited.
 
 ### Deploying
 
-Every push to `main` rebuilds and redeploys through
-`.github/workflows/deploy.yml`. To build and check it locally first:
+Every push to `main` rebuilds the site and force-pushes it to the `gh-pages`
+branch, which Pages serves. One-time setup: Settings > Pages > Source =
+**Deploy from a branch**, branch **gh-pages**, folder **/ (root)**. To build and check it locally first:
 
 ```
 npm run build:web     # writes dist/
@@ -138,3 +139,4 @@ in `app.json` to match, or the site will load a blank page.
 - Push notifications from the Quests tab are iOS/Android-app only.
 - The camera needs HTTPS, which Pages provides; on iOS, Safari only grants
   camera access to a home-screen app from iOS 16.4 up.
+
