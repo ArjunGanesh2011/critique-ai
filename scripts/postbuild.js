@@ -14,6 +14,25 @@ if (!fs.existsSync(indexPath)) {
 }
 
 const head = `
+    <style id="pwa-chrome">
+      /* Without this the document paints white, which shows through the strip
+         viewport-fit=cover exposes below the safe area on an iPhone. */
+      html, body {
+        background-color: #0b0f17;
+        /* No rubber-band bounce revealing the page behind the app. */
+        overscroll-behavior: none;
+      }
+      /* Continue the tab bar's colour through the home-indicator strip, so the
+         bottom of the screen reads as one bar. Collapses to nothing where
+         there is no inset. */
+      body {
+        background-image: linear-gradient(
+          to top,
+          #11161f env(safe-area-inset-bottom, 0px),
+          transparent env(safe-area-inset-bottom, 0px)
+        );
+      }
+    </style>
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <link rel="icon" href="favicon.png" />
@@ -25,7 +44,7 @@ const head = `
 `;
 
 let html = fs.readFileSync(indexPath, 'utf8');
-if (!html.includes('rel="manifest"')) {
+if (!html.includes('rel="manifest"') || !html.includes('id="pwa-chrome"')) {
   html = html.replace('</head>', head + '  </head>');
 }
 
