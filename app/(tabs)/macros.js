@@ -6,7 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useStore } from '../../lib/store';
-import { searchFoods, scaleMacros, lookupBarcode } from '../../lib/foodSearch';
+import { searchFoods, scaleMacros, lookupBarcode, portionGrams, servingText } from '../../lib/foodSearch';
 import MacroBar from '../../components/MacroBar';
 
 const MEALS = [
@@ -25,6 +25,11 @@ function suggestMeal() {
   return 'snack';
 }
 
+// Foods that publish a serving open in servings; anything else opens in grams.
+function defaultPortion(food) {
+  return food?.serving ? { qty: '1', unit: 'serving' } : { qty: '100', unit: 'g' };
+}
+
 export default function Macros() {
   const today = useStore((s) => s.today);
   const goals = useStore((s) => s.goals);
@@ -36,7 +41,10 @@ export default function Macros() {
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [selected, setSelected] = useState(null);
-  const [grams, setGrams] = useState('100');
+  // Portions are counted in servings by default, because that is how people
+  // remember what they ate. Grams stay one tap away for anything weighed.
+  const [qty, setQty] = useState('1');
+  const [unit, setUnit] = useState('serving');
   const [mealType, setMealType] = useState(suggestMeal());
   const [scannerOpen, setScannerOpen] = useState(false);
 
@@ -83,7 +91,7 @@ export default function Macros() {
         );
         return;
       }
-      setSelected(product);
+      pickFood(product);
     } catch (e) {
       Alert.alert('Lookup failed', `${e.message}\n\nTry searching by name instead.`);
     } finally {
@@ -101,18 +109,29 @@ export default function Macros() {
     setScannerOpen(true);
   };
 
+  const pickFood = (food) => {
+    const d = defaultPortion(food);
+    setQty(d.qty);
+    setUnit(d.unit);
+    setSelected(food);
+  };
+
   const onConfirmLog = () => {
-    const g = parseFloat(grams) || 0;
-    if (g <= 0) return Alert.alert('Bad portion', 'Enter grams > 0.');
+    const g = portionGrams(selected, qty, unit);
+    if (g <= 0) return Alert.alert('Bad portion', 'Enter an amount greater than zero.');
     const m = scaleMacros(selected.macrosPer100g, g);
+    const portion = unit === 'serving'
+      ? `${servingText(selected, qty)}, ${Math.round(g)}g`
+      : `${Math.round(g)}g`;
     const result = logFood({
-      name: `${selected.name} (${g}g)`,
+      name: `${selected.name} (${portion})`,
       ...m,
       mealType,
       source: mode === 'barcode' ? 'barcode' : 'search',
     });
     setSelected(null);
-    setGrams('100');
+    setQty('1');
+    setUnit('serving');
     setQuery('');
     setResults([]);
     if (result?.newlyHit?.length > 0) {
@@ -174,7 +193,7 @@ export default function Macros() {
               <TextInput
                 value={query}
                 onChangeText={setQuery}
-                placeholder="Search food (e.g. coconut water, ruffles)"
+                placeholder="Search food (e.g. huel, fruit snacks, roti)"
                 placeholderTextColor="#6b7280"
                 style={styles.input}
                 onSubmitEditing={onSearch}
@@ -185,16 +204,29 @@ export default function Macros() {
               </Pressable>
             </View>
             {results.length > 0 && results.map((item) => (
-              <Pressable key={item.id} style={styles.resultRow} onPress={() => setSelected(item)}>
+              <Pressable key={item.id} style={styles.resultRow} onPress={() => pickFood(item)}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.resultName} numberOfLines={1}>{item.name}</Text>
                   <Text style={styles.resultBrand} numberOfLines={1}>
-                    {item.brand || '—'} · {item.source}
+                    {item.brand || 'Generic'} · {item.source}
                   </Text>
                 </View>
-                <Text style={styles.resultMacros}>
-                  {Math.round(item.macrosPer100g.calories)} kcal · {Math.round(item.macrosPer100g.protein)}g P
-                </Text>
+                {(() => {
+                  // Show the number that matches how this food gets logged:
+                  // per serving when it has one, otherwise per 100g.
+                  const g = item.serving?.grams || 100;
+                  const m = scaleMacros(item.macrosPer100g, g);
+                  return (
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={styles.resultMacros}>
+                        {Math.round(m.calories)} kcal · {Math.round(m.protein)}g P
+                      </Text>
+                      <Text style={styles.resultPer}>
+                        per {item.serving ? item.serving.unit : '100g'}
+                      </Text>
+                    </View>
+                  );
+                })()}
               </Pressable>
             ))}
           </>
@@ -241,7 +273,10 @@ export default function Macros() {
           <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end' }}>
             <View style={styles.modalCard}>
               <Text style={styles.modalTitle}>{selected?.name}</Text>
-              <Text style={styles.modalBrand}>{selected?.brand} · {selected?.source}</Text>
+              <Text style={styles.modalBrand}>
+                {selected?.brand || 'Generic'} · {selected?.source}
+                {selected?.serving ? ` · 1 ${selected.serving.unit} = ${Math.round(selected.serving.grams)}g` : ''}
+              </Text>
 
               <Text style={styles.modalLabel}>Meal</Text>
               <View style={styles.mealPickerRow}>
@@ -257,25 +292,81 @@ export default function Macros() {
                 ))}
               </View>
 
-              <Text style={styles.modalLabel}>Portion (grams)</Text>
-              <TextInput
-                value={grams}
-                onChangeText={setGrams}
-                keyboardType="numeric"
-                style={styles.input}
-                placeholderTextColor="#6b7280"
-              />
+              <Text style={styles.modalLabel}>Portion</Text>
+              {selected?.serving ? (
+                <View style={styles.unitRow}>
+                  <Pressable
+                    onPress={() => { setUnit('serving'); setQty('1'); }}
+                    style={[styles.unitBtn, unit === 'serving' && styles.unitBtnActive]}
+                  >
+                    <Text style={[styles.unitText, unit === 'serving' && styles.unitTextActive]}>
+                      {selected.serving.unitPlural}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      // Keep the exact serving weight (25.5g, not 26g) so the
+                      // macros do not shift just from flipping the unit.
+                      setUnit('g');
+                      setQty(String(Number(selected.serving.grams.toFixed(1))));
+                    }}
+                    style={[styles.unitBtn, unit === 'g' && styles.unitBtnActive]}
+                  >
+                    <Text style={[styles.unitText, unit === 'g' && styles.unitTextActive]}>Grams</Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <Text style={styles.noServing}>
+                  This source gives no serving size, so this one is in grams.
+                </Text>
+              )}
+
+              <View style={styles.qtyRow}>
+                <Pressable
+                  onPress={() => {
+                    const step = unit === 'g' ? 10 : 0.5;
+                    const next = Math.max(0, (parseFloat(qty) || 0) - step);
+                    setQty(String(Number(next.toFixed(2))));
+                  }}
+                  style={styles.stepBtn}
+                >
+                  <Text style={styles.stepText}>-</Text>
+                </Pressable>
+                <TextInput
+                  value={qty}
+                  onChangeText={setQty}
+                  keyboardType="numeric"
+                  style={[styles.input, styles.qtyInput]}
+                  placeholderTextColor="#6b7280"
+                />
+                <Pressable
+                  onPress={() => {
+                    const step = unit === 'g' ? 10 : 0.5;
+                    setQty(String(Number(((parseFloat(qty) || 0) + step).toFixed(2))));
+                  }}
+                  style={styles.stepBtn}
+                >
+                  <Text style={styles.stepText}>+</Text>
+                </Pressable>
+              </View>
 
               {selected && (
                 <View style={styles.previewBox}>
                   {(() => {
-                    const g = parseFloat(grams) || 0;
+                    const g = portionGrams(selected, qty, unit);
                     const m = scaleMacros(selected.macrosPer100g, g);
                     return (
-                      <Text style={styles.previewText}>
-                        {Math.round(m.calories)} kcal · {Math.round(m.protein)}g P · {Math.round(m.carbs)}g C · {Math.round(m.fat)}g F{'\n'}
-                        Sugar {Math.round(m.sugar)}g · Fiber {Math.round(m.fiber)}g · K {Math.round(m.potassium)}mg
-                      </Text>
+                      <>
+                        <Text style={styles.previewPortion}>
+                          {unit === 'serving'
+                            ? servingText(selected, qty) + ' \u00b7 ' + Math.round(g) + 'g'
+                            : Math.round(g) + 'g'}
+                        </Text>
+                        <Text style={styles.previewText}>
+                          {Math.round(m.calories)} kcal, {Math.round(m.protein)}g P, {Math.round(m.carbs)}g C, {Math.round(m.fat)}g F{'\n'}
+                          Sugar {Math.round(m.sugar)}g, Fiber {Math.round(m.fiber)}g, Sodium {Math.round(m.sodium)}mg
+                        </Text>
+                      </>
                     );
                   })()}
                 </View>
@@ -356,6 +447,7 @@ const styles = StyleSheet.create({
   resultName: { color: '#fff', fontSize: 14, fontWeight: '600' },
   resultBrand: { color: '#9ca3af', fontSize: 12 },
   resultMacros: { color: '#7cf0a1', fontSize: 12, fontWeight: '600', marginLeft: 8 },
+  resultPer: { color: '#6b7280', fontSize: 10, marginLeft: 8, marginTop: 1 },
   empty: { color: '#6b7280', fontStyle: 'italic', marginTop: 8 },
   mealGroup: { marginTop: 10 },
   mealHeader: { color: '#7cf0a1', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 6 },
@@ -386,7 +478,24 @@ const styles = StyleSheet.create({
   mealChipIcon: { fontSize: 18 },
   mealChipText: { color: '#9ca3af', fontSize: 11, fontWeight: '700', marginTop: 2 },
   mealChipTextActive: { color: '#0b0f17' },
+  unitRow: { flexDirection: 'row', gap: 8 },
+  unitBtn: {
+    flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center',
+    borderWidth: 1, borderColor: '#1f2937', backgroundColor: '#0b0f17',
+  },
+  unitBtnActive: { backgroundColor: '#7cf0a1', borderColor: '#7cf0a1' },
+  unitText: { color: '#9ca3af', fontSize: 13, fontWeight: '700', textTransform: 'capitalize' },
+  unitTextActive: { color: '#0b0f17' },
+  noServing: { color: '#9ca3af', fontSize: 12, fontStyle: 'italic' },
+  qtyRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
+  qtyInput: { textAlign: 'center', fontSize: 18, fontWeight: '700' },
+  stepBtn: {
+    width: 48, paddingVertical: 10, borderRadius: 10, alignItems: 'center',
+    backgroundColor: '#1f2937',
+  },
+  stepText: { color: '#fff', fontSize: 20, fontWeight: '800', lineHeight: 24 },
   previewBox: { backgroundColor: '#0b0f17', borderRadius: 10, padding: 12, marginTop: 12 },
+  previewPortion: { color: '#fff', fontSize: 14, fontWeight: '700', marginBottom: 4 },
   previewText: { color: '#7cf0a1', fontSize: 13, fontWeight: '600', lineHeight: 20 },
   btn: { flex: 1, paddingVertical: 13, borderRadius: 10, alignItems: 'center' },
   btnGhost: { backgroundColor: '#1f2937' },
