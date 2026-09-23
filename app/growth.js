@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { localDateKey, addDaysKey } from '../lib/dates';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -16,8 +17,8 @@ export default function Growth() {
     const startKg = profile.startWeightKg;
     if (startKg && (list.length === 0 || Math.abs(list[0].weightKg - startKg) > 0.01)) {
       // Use a date 1 day before the earliest entry, or today minus 1 if list is empty
-      const firstDate = list[0]?.date || new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-      const startDate = new Date(new Date(firstDate).getTime() - 86400000).toISOString().slice(0, 10);
+      const firstDate = list[0]?.date || addDaysKey(localDateKey(), -1);
+      const startDate = addDaysKey(firstDate, -1);
       list.unshift({ date: startDate, weightKg: startKg, isStart: true });
     }
     return list;
@@ -147,7 +148,7 @@ function computeStats(weights, profile) {
       const weeksToGoal = Math.abs(remainingLb) / Math.abs(weeklyLb);
       const targetDate = new Date();
       targetDate.setDate(targetDate.getDate() + Math.round(weeksToGoal * 7));
-      projectionText = `At ${weeklySign}${weeklyLb.toFixed(2)} lb/week, you'll hit your goal of ${(goalKg * 2.2046).toFixed(1)} lb around ${formatDate(targetDate.toISOString().slice(0, 10))} (~${Math.round(weeksToGoal)} weeks).`;
+      projectionText = `At ${weeklySign}${weeklyLb.toFixed(2)} lb/week, you'll hit your goal of ${(goalKg * 2.2046).toFixed(1)} lb around ${formatDate(localDateKey(targetDate))} (~${Math.round(weeksToGoal)} weeks).`;
     } else if (days >= 7 && !towardGoal) {
       projectionText = `Heads up — you're moving away from your goal at ${weeklySign}${weeklyLb.toFixed(2)} lb/week. Adjust calories or training.`;
     }

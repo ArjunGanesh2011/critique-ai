@@ -1,6 +1,6 @@
 // Prompts for an Anthropic API key and saves it to this device only.
-// The web build is public, so the key can never live in the bundle —
-// it is typed in here once and persisted through the store.
+// The web build is public, so the key can never live in the bundle.
+// It is typed in here once and persisted through the store.
 
 import { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Linking } from 'react-native';
@@ -19,7 +19,7 @@ export default function ApiKeyGate({ feature = 'This feature' }) {
         <Text style={styles.h1}>Add your Anthropic key</Text>
         <Text style={styles.sub}>
           {feature} calls Claude directly from your phone. Your key is saved on this device
-          only — it is never uploaded and never included in the app download.
+          only. It is never uploaded and never included in the app download.
         </Text>
 
         <TextInput

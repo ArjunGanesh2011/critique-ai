@@ -4,6 +4,7 @@ import {
   Alert, Modal, ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useStore } from '../../lib/store';
 import { searchFoods, scaleMacros, lookupBarcode, portionGrams, servingText } from '../../lib/foodSearch';
@@ -242,7 +243,12 @@ export default function Macros() {
           </Pressable>
         )}
 
-        <Text style={[styles.h2, { marginTop: 12 }]}>Today's log</Text>
+        <View style={styles.logHead}>
+          <Text style={styles.h2}>Today's log</Text>
+          <Pressable onPress={() => router.push('/insights')} accessibilityLabel="Open history and insights">
+            <Text style={styles.historyLink}>History and insights</Text>
+          </Pressable>
+        </View>
         {today.entries.length === 0 ? (
           <Text style={styles.empty}>Nothing logged yet. Crush it.</Text>
         ) : (
@@ -413,6 +419,8 @@ const styles = StyleSheet.create({
   container: { padding: 20, gap: 14, paddingBottom: 60 },
   h1: { color: '#fff', fontSize: 26, fontWeight: '800' },
   h2: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  logHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 12 },
+  historyLink: { color: '#7cf0a1', fontSize: 13, fontWeight: '700' },
   sectionLabel: { color: '#6b7280', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 10 },
   card: { backgroundColor: '#11161f', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#1f2937' },
   goalsHit: { color: '#7cf0a1', fontSize: 12, fontWeight: '600', marginTop: 10 },

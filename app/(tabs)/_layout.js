@@ -33,7 +33,9 @@ export default function TabsLayout() {
         tabBarItemStyle: { paddingHorizontal: 0 },
         tabBarActiveTintColor: '#7cf0a1',
         tabBarInactiveTintColor: '#6b7280',
-        tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
+        // Eight tabs leave each label about 28px on a 320px phone. Slightly
+        // tighter tracking fits "Macros" without shrinking the text.
+        tabBarLabelStyle: { fontSize: 9, fontWeight: '600', letterSpacing: -0.4 },
       }}
     >
       <Tabs.Screen name="index"    options={{ title: 'You',     tabBarIcon: tabIcon('🛡️') }} />
@@ -41,6 +43,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="camera"   options={{ title: 'Snap',    tabBarIcon: tabIcon('📸') }} />
       <Tabs.Screen name="workouts" options={{ title: 'Gym',     tabBarIcon: tabIcon('🏋️') }} />
       <Tabs.Screen name="diet"     options={{ title: 'Diet',    tabBarIcon: tabIcon('🥗') }} />
+      <Tabs.Screen name="sleep"    options={{ title: 'Sleep',   tabBarIcon: tabIcon('🌙') }} />
       <Tabs.Screen name="quests"   options={{ title: 'Quests',  tabBarIcon: tabIcon('⚔️') }} />
       <Tabs.Screen name="unlock"   options={{ title: 'Unlock',  tabBarIcon: tabIcon('🔓') }} />
     </Tabs>

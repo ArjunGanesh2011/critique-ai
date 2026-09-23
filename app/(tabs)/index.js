@@ -104,6 +104,9 @@ export default function Home() {
           <Pressable onPress={() => router.push('/growth')} style={styles.growthBtn}>
             <Text style={styles.growthBtnText}>📈 See Growth</Text>
           </Pressable>
+          <Pressable onPress={() => router.push('/insights')} style={styles.growthBtn}>
+            <Text style={styles.growthBtnText}>Insights: food, sleep and training</Text>
+          </Pressable>
         </View>
 
         <View style={styles.statsRow}>
