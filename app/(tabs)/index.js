@@ -5,6 +5,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import LineChart from '../../components/LineChart';
+import { monthDay } from '../../lib/dates';
 import { useStore, tierFromXp } from '../../lib/store';
 import CharacterCard from '../../components/CharacterCard';
 import MacroBar from '../../components/MacroBar';
@@ -99,7 +101,15 @@ export default function Home() {
             {deltaSign}{deltaLb} lb since start
           </Text>
           {weights.length > 1 && (
-            <Sparkline data={weights.map((w) => w.weightKg * 2.2046)} color={trendColor} />
+            <LineChart
+              bare
+              title="Weight trend"
+              data={weights.slice(-60).map((w) => ({ date: w.date, value: Math.round(w.weightKg * 22.046) / 10 }))}
+              color="#7cf0a1"
+              unit=" lb"
+              defaultReadout={`Goal ${gwLb} lb`}
+              formatLabel={(d) => monthDay(d.date)}
+            />
           )}
           <Pressable onPress={() => router.push('/growth')} style={styles.growthBtn}>
             <Text style={styles.growthBtnText}>📈 See Growth</Text>
@@ -125,7 +135,7 @@ export default function Home() {
 
         <Pressable
           onPress={() =>
-            Alert.alert('Reset everything?', 'Wipes XP, macros, streak, quests, weights, workouts, profile.', [
+            Alert.alert('Reset everything?', 'Wipes XP, streak, food history, sleep, weights, workouts, quests and your profile. Your API key stays on this device.', [
               { text: 'Cancel', style: 'cancel' },
               { text: 'Reset', style: 'destructive', onPress: resetAll },
             ])
@@ -197,23 +207,6 @@ function WeightStat({ label, value, color }) {
   );
 }
 
-// Tiny inline sparkline drawn from divs — no chart lib needed.
-function Sparkline({ data, color }) {
-  if (!data || data.length < 2) return null;
-  const min = Math.min(...data), max = Math.max(...data);
-  const range = max - min || 1;
-  return (
-    <View style={styles.sparklineWrap}>
-      {data.map((v, i) => {
-        const h = ((v - min) / range) * 100;
-        return (
-          <View key={i} style={[styles.sparkBar, { height: `${Math.max(8, h)}%`, backgroundColor: color }]} />
-        );
-      })}
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#0b0f17' },
   container: { padding: 20, gap: 16, paddingBottom: 60 },
@@ -250,14 +243,6 @@ const styles = StyleSheet.create({
   weightLabel: { color: '#6b7280', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
   weightValue: { fontSize: 22, fontWeight: '800', marginTop: 4 },
   deltaText: { textAlign: 'center', fontSize: 14, fontWeight: '700', marginTop: 12 },
-  sparklineWrap: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    height: 40,
-    marginTop: 10,
-    gap: 2,
-  },
-  sparkBar: { flex: 1, borderRadius: 1, opacity: 0.7 },
 
   statsRow: { flexDirection: 'row', gap: 10 },
   stat: {

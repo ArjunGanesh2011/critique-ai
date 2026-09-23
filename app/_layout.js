@@ -4,6 +4,10 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useStore } from '../lib/store';
+import { installWebAlert } from '../lib/webAlert';
+
+// Before any screen renders, so every Alert.alert in the app works on the web.
+installWebAlert();
 
 // Close out yesterday the moment it is over: when the app opens, when it
 // comes back to the foreground, and once a minute so midnight is caught

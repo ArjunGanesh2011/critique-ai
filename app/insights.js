@@ -6,6 +6,7 @@ import { useStore } from '../lib/store';
 import { buildInsights, buildSeries, buildHistory } from '../lib/insights';
 import { localDateKey, weekdayShort, monthDay } from '../lib/dates';
 import BarChart from '../components/BarChart';
+import LineChart from '../components/LineChart';
 
 // Status colours are reserved for feedback tone and always ship with a word,
 // never colour alone.
@@ -169,11 +170,16 @@ export default function Insights() {
               emptyText="Finish a workout in the Gym tab"
             />
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Weight, last 60 days</Text>
               {series.weight.length >= 2 ? (
-                <Text style={styles.weightText}>
-                  {firstW.value} lb on {monthDay(firstW.date)} to {lastW.value} lb on {monthDay(lastW.date)} ({lastW.value - firstW.value >= 0 ? '+' : ''}{(lastW.value - firstW.value).toFixed(1)} lb)
-                </Text>
+                <LineChart
+                  bare
+                  title="Weight, last 60 days"
+                  data={series.weight}
+                  color="#7cf0a1"
+                  unit=" lb"
+                  defaultReadout={`${lastW.value - firstW.value >= 0 ? '+' : ''}${(lastW.value - firstW.value).toFixed(1)} lb`}
+                  formatLabel={(d) => monthDay(d.date)}
+                />
               ) : (
                 <Text style={styles.emptyText}>Log two or more weigh-ins on the home screen.</Text>
               )}
@@ -245,7 +251,6 @@ const styles = StyleSheet.create({
   insightTitle: { color: '#fff', fontSize: 15, fontWeight: '700' },
   insightDetail: { color: '#d1d5db', fontSize: 13, lineHeight: 19 },
   insightAction: { color: '#9ca3af', fontSize: 13, lineHeight: 19, fontStyle: 'italic' },
-  weightText: { color: '#d1d5db', fontSize: 13, lineHeight: 19 },
   linkBtn: { backgroundColor: '#1f2937', paddingVertical: 11, borderRadius: 10, alignItems: 'center' },
   linkText: { color: '#7cf0a1', fontWeight: '700', fontSize: 13 },
   histRow: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#1f2937', gap: 6 },
