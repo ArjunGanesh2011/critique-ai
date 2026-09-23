@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Critique AI</title>
+    <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
+    <style id="expo-reset">
+      /* These styles make the body full-height */
+      html,
+      body {
+        height: 100%;
+      }
+      /* These styles disable body scrolling if you are using <ScrollView> */
+      body {
+        overflow: hidden;
+      }
+      /* These styles make the root element full-height */
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+    </style>
+  <meta name="theme-color" content="#0b0f17">
+<meta name="description" content="AI fitness, macro tracking and diet planning.">
+
+    <style id="pwa-chrome">
+      /* Without this the document paints white, which shows through the strip
+         viewport-fit=cover exposes below the safe area on an iPhone. */
+      html, body {
+        background-color: #0b0f17;
+        /* No rubber-band bounce revealing the page behind the app. */
+        overscroll-behavior: none;
+      }
+      /* Continue the tab bar's colour through the home-indicator strip, so the
+         bottom of the screen reads as one bar. Collapses to nothing where
+         there is no inset. */
+      body {
+        background-image: linear-gradient(
+          to top,
+          #11161f env(safe-area-inset-bottom, 0px),
+          transparent env(safe-area-inset-bottom, 0px)
+        );
+      }
+    </style>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="icon" href="favicon.png" />
+    <meta name="theme-color" content="#0b0f17" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Critique" />
+  </head>
+
+  <body>
+    <!-- Use static rendering with Expo Router to support running without JavaScript. -->
+    <noscript>
+      You need to enable JavaScript to run this app.
+    </noscript>
+    <!-- The root element for your Expo app. -->
+    <div id="root"></div>
+  <script src="/critique-ai/_expo/static/js/web/entry-7a96c2f5622c0a52e1aa86299cb9d0c8.js" defer></script>
+</body>
+</html>
